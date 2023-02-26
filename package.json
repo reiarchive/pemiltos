@@ -1,0 +1,22 @@
+{
+  "name": "pemiltos2.0",
+  "version": "2.0.0",
+  "description": "Whatsapp Bot for Pemiltos 2023",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@adiwajshing/baileys": "^4.4.0",
+    "@adiwajshing/keyed-db": "^0.2.4",
+    "baileys": "^6.0.7",
+    "chalk": "^4.1.2",
+    "figlet": "^1.5.2",
+    "lodash": "^4.17.21",
+    "moment-timezone": "^0.5.41",
+    "mongoose": "^6.10.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
