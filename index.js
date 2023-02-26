@@ -16,8 +16,7 @@ const config = require('./config/config.json');
 const util = require('util');
 const usersMap = new Map();
 
-const { searchUser, addUser } = require('./function/crud');
-
+const { searchUser, addUser, searchNis } = require('./function/crud');
 
 
 var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'a'});
@@ -174,7 +173,7 @@ async function startServer() {
     client.ev.on('messages.upsert', async chatUpdate => {
         try {
             
-            var usersChat = chatUpdate.messages[0]
+            let usersChat = chatUpdate.messages[0]
             
             
             
@@ -210,6 +209,28 @@ async function startServer() {
 
                     if(userData) {
 
+                        console.log(userData);
+
+                        const sections = [
+                            {
+                                title: "Konfirmasi disini",
+                                rows: [
+                                    {title: "Yes", rowId: "confirm_" + nis, description: "Data benar"},
+                                    {title: "No", rowId: "reject_" + nis, description: "Data salah"}
+                                ]
+                            }
+                        ]
+                        
+                        const listMessage = {
+                            title: "Data diri",
+                            text:   "Nama : " + userData['nama'] + "\n" +
+                                    "NIS     : " + userData['nis'] + "\n\n" +
+                                    "Klik tombol untuk konfirmasi identitas kamu!",
+                            buttonText: "Klik disini!",
+                            sections
+                        }
+
+                        client.sendMessage(usersChat.key.remoteJid, listMessage);
                     } else {
                         client.sendMessage(usersChat.key.remoteJid, { text: "nis kamu tidak terdaftar di database"});
                     }
