@@ -198,6 +198,7 @@ async function startServer() {
             
             console.log(`[\x1b[1;32m ${config.name} \x1b[1;37m] ` + moment().tz('Asia/Jakarta').format("HH:mm:ss") + ' ' + chalk.green(userNumber) + ' ' + chalk.blue(usersChat.pushName) + ' SEND ' + chalk.blue(userSend))
             
+
             if(typeMessage == "conversation" || typeMessage == "extendedTextMessage") {
                 var pesan = (m.body).toString();
 
@@ -238,10 +239,16 @@ async function startServer() {
                 }
                
             } else if(typeMessage == "listResponseMessage") {
-                try {
-                handleRowID(client, usersChat)
-                } catch(e) {
-                    console.log(e)
+
+                const confirm_deny = usersChat.message.listResponseMessage.singleSelectReply.selectedRowId;
+
+                if(confirm_deny.startsWith('confirm_')) {
+                    // Insert di db kalo dia register
+                    client.sendMessage(usersChat.key.remoteJid, { text : "Terkonfirmasi" });
+                } else if(confirm_deny.startsWith('reject_')) {
+                    client.sendMessage(usersChat.key.remoteJid, { text : "Silahkan register ulang" });
+                } else {
+                    client.sendMessage(usersChat.key.remoteJid, { text: "Error, silahkan hubungi MPK"});
                 }
             }
 
