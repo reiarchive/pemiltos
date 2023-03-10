@@ -16,6 +16,7 @@ const config = require('./config/config.json');
 const util = require('util');
 const usersMap = new Map();
 
+const { sendDaftarKandidat, handleRowID } = require('./function/sendPilihan');
 const { searchUser, addUser, searchNis } = require('./function/crud');
 
 
@@ -173,9 +174,7 @@ async function startServer() {
     client.ev.on('messages.upsert', async chatUpdate => {
         try {
             
-            let usersChat = chatUpdate.messages[0]
-            
-            
+            let usersChat = chatUpdate.messages[0]            
             
             if (!usersChat.message) return
             usersChat.message = (Object.keys(usersChat.message)[0] === 'ephemeralMessage') ? usersChat.message.ephemeralMessage.message : usersChat.message
@@ -183,16 +182,19 @@ async function startServer() {
             if (!client.public && !usersChat.key.fromMe && chatUpdate.type === 'notify') return
             if (usersChat.key.id.startsWith('BAE5') && usersChat.key.id.length === 16) return
             
-            
-            var device_type = getDevice(usersChat.key.id)
-
-            var userNumber = ((usersChat.key.remoteJid).toString()).split("@")[0]
-
             m = smsg(client, usersChat, store)
-
-
+            
+            /* Checking user */
+            var device_type = getDevice(usersChat.key.id)
+            var userNumber = ((usersChat.key.remoteJid).toString()).split("@")[0]
             var typeMessage = getContentType(usersChat.message);
 
+            const isUserExists = await searchUser(userNumber)
+
+            if(!isUserExists && !(m.body).startsWith("/register ") && typeMessage !== "listResponseMessage") {
+                await client.sendMessage(usersChat.key.remoteJid, { text: config.firstTime });
+                return;
+            }
 
             const userSend = (typeMessage == "conversation" || typeMessage == "extendedTextMessage") ? m.body : ((typeMessage == "imageMessage") ? "Image" : ((typeMessage == "documentMessage") ? "Document" : ((typeMessage == "videoMessage") ? "Video" : ((typeMessage == "stickerMessage") ? "Sticker" : "Unknown"))))
             
@@ -206,7 +208,7 @@ async function startServer() {
                 if(pesan.startsWith('/register ')) {
                     const nis = pesan.replace("/register ", "").trim();
                     
-                    var userData = await searchNis(nis)
+                    var userData = await searchNis(parseInt(nis))
 
                     if(userData) {
 
@@ -243,7 +245,39 @@ async function startServer() {
                 const confirm_deny = usersChat.message.listResponseMessage.singleSelectReply.selectedRowId;
 
                 if(confirm_deny.startsWith('confirm_')) {
+         
+                    //extract nis
+                    let nis = confirm_deny.split("confirm_")[1];
+         
+                    //get data nis
+                    let data_nis = await searchNis(nis)
+
+                    if(!data_nis) {
+                        client.sendMessage(usersChat.key.remoteJid, { text: "Error, silahkan hubungi Admin MPK"});
+                        return;
+                    }
+
+                    
+                    let data = {
+                        number: userNumber,
+                        nis: nis,
+                        whatsapp_name: usersChat.pushName,
+                        name: data_nis['nama']
+                    }
+                    
+                    let registering = await addUser(data)
+                    
+                    if(registering) {
+
+                        await sendDaftarKandidat(client, usersChat.key.remoteJid)
+                        console.log(`[\x1b[1;32m ${config.name} \x1b[1;37m] ` + moment().tz('Asia/Jakarta').format("HH:mm:ss") + ' ' + chalk.green(userNumber) + ' ' + chalk.blue(data_nis['nama']) + ' Berhasil Registrasi');                        
+                        console.log("Berhasil registrasi");
+                    }
+
+
                     // Insert di db kalo dia register
+
+
                     client.sendMessage(usersChat.key.remoteJid, { text : "Terkonfirmasi" });
                 } else if(confirm_deny.startsWith('reject_')) {
                     client.sendMessage(usersChat.key.remoteJid, { text : "Silahkan register ulang" });

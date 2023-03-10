@@ -1,5 +1,9 @@
 {
     "name": "Created by MULFU BOT",
     "author": "6285772355782",
-    "timezone": "Asia/Jakarta"
+    "timezone": "Asia/Jakarta",
+    "firstTime": "Hai, selamat datang di bot pemiltos!\n\nKetik */register nis* untuk daftar di bot ini!",
+    "pilihan": {
+        "menuKandidat": "Kamu telah berhasil registrasi! Silahkan klik menu diatas untuk melihat daftar kandidat atau kamu bisa juga mengetik /menu"
+    }
 }

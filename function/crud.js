@@ -10,7 +10,7 @@ async function addUser(data) {
         number: data['number'],
         nis: data['nis'],
         whatsapp_name: data['whatsapp_name'],
-        name: data,
+        name: data['name'],
     });
 
     return userPemiltos.save()
